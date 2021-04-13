@@ -67,16 +67,16 @@ void sort_nms(box* B) { //排序算法用什么？？ 是否使用链表堆栈哈希表？？DSP呢？So
 }
 
 //NMS算法,传入出入候选框集合、输入候选框对应置信度集合、阈值
-box* do_nms(box* B, float Nt) {
-	box* D = (box*)malloc(sizeof(box) * BOX_SIZE);
+void do_nms(box* B, box*D, float Nt) {
 	sort_nms(B);
-	int count = BOX_SIZE;
-	int current = 0;
+	int count = 4;
 	int max_index = 0;
-	while (--count>0) {	//探究一轮循环的方法，与所以输出框比较，递归？？
-		if(!(B + max_index)->supression)
-			*(D + current) = *(B + max_index);
-
+	int current_index = 0;
+	while (0<count--) {	//探究一轮循环的方法，与所以输出框比较，递归？？
+		if (!B[current_index].supression) {
+			D[current_index] = B[current_index];
+		}
+		current_index++;
 	}
 	return D;
 }
@@ -126,7 +126,7 @@ int main(void) {
 	start = clock();
 	/*******************/
 	while (i--) {
-		d = do_nms(b,THRESH);
+		do_nms(b,d,THRESH);
 		//iou = box_iou(b+0,b+1);
 	}
 	/*******************/
@@ -136,9 +136,9 @@ int main(void) {
 	//printf("IoU: %f\n", iou);
 	//printf("s1: %f, s2: %f",*(s+0), *(s+1));
 	box* dd = d;
-	int i;
+
 	for(i=0;i<4;i++)
-		printf("d: %f",(dd+i)->cfd);
+		printf("d: %f\n",(dd+i)->cfd);
 	free(b);
 	free(d);
 	system("pause");
