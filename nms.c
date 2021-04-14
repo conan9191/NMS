@@ -15,74 +15,105 @@
 
 #define MAX(a,b)(a>b?a:b)
 #define MIN(a,b)(a<=b?a:b)
-#define BOX_SIZE 100
-#define THRESH 0.3
+#define BOX_SIZE 4
+#define THRESH 0.3f
 
- //å€™é€‰æ¡†
+ //ºòÑ¡¿ò
 typedef struct {
-	float lx, ly, rx, ry;	//å·¦ä¸Šè§’x  å·¦ä¸Šè§’y	 å³ä¸‹è§’x	 å³ä¸‹è§’y
-	float cfd;	//ç½®ä¿¡åº¦ Confidence
-	int supression; //æ˜¯å¦è¢«æŠ‘åˆ¶
+	float lx, ly, rx, ry;	//×óÉÏ½Çx  ×óÉÏ½Çy	 ÓÒÏÂ½Çx	 ÓÒÏÂ½Çy
+	float cfd;	//ÖÃĞÅ¶È Confidence
+	int supression; //ÊÇ·ñ±»ÒÖÖÆ
 } box;
 
 float overlap(float a_l, float a_r, float b_l, float b_r);
 
-//ä¼ å…¥ä¸¤ä¸ªå€™é€‰æ¡†å˜é‡æŸä¸€ç»´åº¦åæ ‡å€¼ï¼Œè¿”å›é‡å éƒ¨åˆ†çš„å®½å’Œé«˜
-float overlap(float a_l, float a_r, float b_l, float b_r) {	//è¿”å›å€¼æ˜¯å¦å¯ä»¥ä¼˜åŒ–ï¼Ÿï¼Ÿ//ä¼ å…¥æŒ‡é’ˆæ˜¯å¦æ›´å¿«ï¼Ÿï¼Ÿ
-	//printf("aå·¦è¾¹: %f,aå³è¾¹: %f,bå·¦è¾¹: %f,bå³è¾¹: %f", a_l, a_r, b_r, b_r);
-	float sum_sides = a_r - a_l + b_r - b_l;	//åŒä¸€æ–¹å‘ä¸¤ä¸ªè¾¹é•¿ä¹‹å’Œ	//æ˜¯å¦è¦ç»å¯¹å€¼
-	float new_sides = MAX(a_r, b_r) - MIN(a_l, b_l);	//åŒä¸€æ–¹å‘é•¿åº¦å¹¶é›† //ç”¨maxè¿˜æ˜¯ç»å¯¹å€¼ï¼Ÿï¼Ÿä¼˜åŒ–ã€‚
+//´«ÈëÁ½¸öºòÑ¡¿ò±äÁ¿Ä³Ò»Î¬¶È×ø±êÖµ£¬·µ»ØÖØµş²¿·ÖµÄ¿íºÍ¸ß
+float overlap(float a_l, float a_r, float b_l, float b_r) {	//·µ»ØÖµÊÇ·ñ¿ÉÒÔÓÅ»¯£¿£¿//´«ÈëÖ¸ÕëÊÇ·ñ¸ü¿ì£¿£¿
+	//printf("a×ó±ß: %f,aÓÒ±ß: %f,b×ó±ß: %f,bÓÒ±ß: %f", a_l, a_r, b_r, b_r);
+	float sum_sides = a_r - a_l + b_r - b_l;	//Í¬Ò»·½ÏòÁ½¸ö±ß³¤Ö®ºÍ	//ÊÇ·ñÒª¾ø¶ÔÖµ
+	float new_sides = MAX(a_r, b_r) - MIN(a_l, b_l);	//Í¬Ò»·½Ïò³¤¶È²¢¼¯ //ÓÃmax»¹ÊÇ¾ø¶ÔÖµ£¿£¿ÓÅ»¯¡£
 	return  sum_sides - new_sides;
 }
 
-//ä¼ å…¥ä¸¤ä¸ªå€™é€‰æ¡†å˜é‡aã€bï¼Œè¿”å›ç›¸äº¤é¢ç§¯å€¼
-float box_intersection(box *a, box *b)	//ä¼ å…¥æŒ‡é’ˆæ˜¯å¦æ›´å¿«ï¼Ÿï¼Ÿ
+//´«ÈëÁ½¸öºòÑ¡¿ò±äÁ¿a¡¢b£¬·µ»ØÏà½»Ãæ»ıÖµ
+float box_intersection(box *a, box *b)	//´«ÈëÖ¸ÕëÊÇ·ñ¸ü¿ì£¿£¿
 {
 	float w = overlap(a->lx, a->rx, b->lx, b->rx);
 	float h = overlap(a->ry, a->ly, b->ry, b->ly);
 	//printf("w: %f, h: %f", w, h);
 	if (w <= 0 || h <= 0) return 0;
-	float area = w * h;	//ç›´æ¥è¿”å› ä¸åˆ›å»ºå˜é‡??
+	float area = w * h;	//Ö±½Ó·µ»Ø ²»´´½¨±äÁ¿??
 	return w * h;
 }
 
-//ä¼ å…¥ä¸¤ä¸ªå€™é€‰æ¡†å˜é‡aã€bï¼Œè¿”å›å¹¶é›†é¢ç§¯å€¼
-float box_union(box *a, box *b) {	//ä¼ å…¥æŒ‡é’ˆæ˜¯å¦æ›´å¿«ï¼Ÿï¼Ÿ
-	float insersection = box_intersection(a, b);	//å‡å°‘å‡½æ•°è°ƒç”¨è¿˜æ˜¯å¼€è¾Ÿå˜é‡ç©ºé—´è¿›è¡Œä¼˜åŒ–ï¼Ÿï¼Ÿ
-	float areaA = (a->rx - a->lx) * (a->ly - a->ry);	//æ˜¯å¦ä½¿ç”¨ç»å¯¹å€¼ï¼Ÿï¼Ÿ
+//´«ÈëÁ½¸öºòÑ¡¿ò±äÁ¿a¡¢b£¬·µ»Ø²¢¼¯Ãæ»ıÖµ
+float box_union(box *a, box *b) {	//´«ÈëÖ¸ÕëÊÇ·ñ¸ü¿ì£¿£¿
+	float insersection = box_intersection(a, b);	//¼õÉÙº¯Êıµ÷ÓÃ»¹ÊÇ¿ª±Ù±äÁ¿¿Õ¼ä½øĞĞÓÅ»¯£¿£¿
+	float areaA = (a->rx - a->lx) * (a->ly - a->ry);	//ÊÇ·ñÊ¹ÓÃ¾ø¶ÔÖµ£¿£¿
 	float areaB = (b->rx - b->lx) * (b->ly - b->ry);
-	float area = areaA + areaB - insersection;	//ç›´æ¥è¿”å› ä¸åˆ›å»ºå˜é‡??
+	float area = areaA + areaB - insersection;	//Ö±½Ó·µ»Ø ²»´´½¨±äÁ¿??
 	return area;
 }
 
-//ä¼ å…¥ä¸¤ä¸ªå€™é€‰æ¡†å˜é‡aã€bï¼Œè¿”å›äº¤å¹¶æ¯”å€¼
-float box_iou(box *a, box *b) //ä¼ å…¥æŒ‡é’ˆæ˜¯å¦æ›´å¿«ï¼Ÿï¼Ÿ
+//´«ÈëÁ½¸öºòÑ¡¿ò±äÁ¿a¡¢b£¬·µ»Ø½»²¢±ÈÖµ
+float box_iou(box *a, box *b) //´«ÈëÖ¸ÕëÊÇ·ñ¸ü¿ì£¿£¿
 {
-    return box_intersection(a, b)/box_union(a, b);	//dspå¯è¿›è¡Œé™¤æ³•ä¼˜åŒ–ï¼ï¼
+    return box_intersection(a, b)/box_union(a, b);	//dsp¿É½øĞĞ³ı·¨ÓÅ»¯£¡£¡
 }
 
-//æŒ‰ç…§ç½®ä¿¡åº¦ä»å¤§åˆ°å°æ’åº
-void sort_nms(box* B) { //æ’åºç®—æ³•ç”¨ä»€ä¹ˆï¼Ÿï¼Ÿ æ˜¯å¦ä½¿ç”¨é“¾è¡¨å †æ ˆå“ˆå¸Œè¡¨ï¼Ÿï¼ŸDSPå‘¢ï¼ŸSoftNMSå‘¢ï¼Ÿï¼ˆæ•°ç»„æŸ¥æ‰¾å’Œé“¾è¡¨åˆ é™¤å“ªä¸ªè´¹æ—¶ï¼‰C++ ERASE()æºç æ”¹å†™
-
+//¹é²¢ÅÅĞò
+void merge(box* B, box* temp, int l, int mid, int r) {
+	int i = l, j = mid + 1, m = 1, k = 1;
+	while (i <= mid && j <= r) {
+		if ((B + i)->cfd < (B + j)->cfd)
+			*(temp + m++) = *(B + j++);
+		else 
+			*(temp + m++) = *(B + i++);
+	}
+	while (i <= mid) 
+		*(temp + m++) = *(B + i++);
+	while (j <= r) 
+		*(temp + m++) = *(B + j++);
+	for (k = 1; k <= r - l + 1; k++)
+		*(B + l + k - 1) = *(temp + k);
 }
 
-//NMSç®—æ³•,ä¼ å…¥å‡ºå…¥å€™é€‰æ¡†é›†åˆã€è¾“å…¥å€™é€‰æ¡†å¯¹åº”ç½®ä¿¡åº¦é›†åˆã€é˜ˆå€¼,è¿”å›è¾“å‡ºå€™é€‰æ¡†ä¸ªæ•°
+//°´ÕÕÖÃĞÅ¶È´Ó´óµ½Ğ¡ÅÅĞò
+void sort_nms(box* B, box* temp, int l, int r) {		//£¨Êı×é²éÕÒºÍÁ´±íÉ¾³ıÄÄ¸ö·ÑÊ±£©C++ ERASE()Ô´Âë¸ÄĞ´
+	if (l < r) {
+		int mid = (l + r) / 2;
+		sort_nms(B, temp, l, mid);
+		sort_nms(B, temp, mid + 1, r);
+		merge(B, temp, l, mid, r);
+	}
+}
+
+//NMSËã·¨,´«Èë³öÈëºòÑ¡¿ò¼¯ºÏ¡¢ÊäÈëºòÑ¡¿ò¶ÔÓ¦ÖÃĞÅ¶È¼¯ºÏ¡¢ãĞÖµ,·µ»ØÊä³öºòÑ¡¿ò¸öÊı
 int do_nms(box* B, box*D, float Nt) {
-	sort_nms(B);
-	int max_index = 0;
-	int current_index =  0;
+	int i;
+	for (i = 0; i < BOX_SIZE; i++)
+		printf("d: %.2f\n", (B + i)->cfd);
+
+	box* temp = (box*)malloc(sizeof(box) * (BOX_SIZE+1));
+	sort_nms(B, temp, 0, (BOX_SIZE - 1));
+	free(temp);
+
+	for (i = 0; i < BOX_SIZE; i++)
+		printf("d: %.2f\n", (B + i)->cfd);
+
+	int max_index = 0, current_index = 0;
 	int j;
 	float iou;
-	while (current_index<4) {	//æ¢ç©¶ä¸€è½®å¾ªç¯çš„æ–¹æ³•ï¼Œä¸æ‰€ä»¥è¾“å‡ºæ¡†æ¯”è¾ƒï¼Œé€’å½’ï¼Ÿï¼Ÿ
+	while (current_index< BOX_SIZE) {	//Ì½¾¿Ò»ÂÖÑ­»·µÄ·½·¨£¬ÓëËùÒÔÊä³ö¿ò±È½Ï£¬µİ¹é£¿£¿
 		printf("current_index: %d\n", current_index);
-		if (!B[current_index].supression) {
-			D[max_index] = B[current_index];
-			B[current_index].supression = 1;
-			for (j = current_index+1; j < 4; j++) {
-				iou = box_iou(&D[max_index], &B[j]);
+		if (!((B+current_index)->supression)) {
+			*(D + max_index) = *(B + current_index);
+			(B + current_index)->supression = 1;
+			for (j = current_index+1; j < BOX_SIZE; j++) {
+				iou = box_iou(D + max_index, B + j);
 				printf("iou: %f\n", iou);
 				if (iou >= Nt)
-					B[j].supression = 1;
+					(B + j)->supression = 1;
 			}
 			max_index++;
 		}
@@ -91,34 +122,34 @@ int do_nms(box* B, box*D, float Nt) {
 	return max_index;
 }
 
-//æ•°æ®é›†åˆ†é…å¤„ç†
+//Êı¾İ¼¯·ÖÅä´¦Àí
 void data_clean(box* b) {	
 	b[0].lx = 50.0;
 	b[0].ly = 100.0;
 	b[0].rx = 100.0;
 	b[0].ry = 0.0;
-	b[0].cfd = 0.95;
+	b[0].cfd = 0.14f;
 	b[0].supression = 0;
 
 	b[1].lx = 0.0;
 	b[1].ly = 100.0;
 	b[1].rx = 100.0;
 	b[1].ry = 0.0;
-	b[1].cfd = 0.9;
+	b[1].cfd = 0.90f;
 	b[1].supression = 0;
 
 	b[2].lx = 100.0;
 	b[2].ly = 200.0;
 	b[2].rx = 200.0;
 	b[2].ry = 0.0;
-	b[2].cfd = 0.7;
+	b[2].cfd = 0.70f;
 	b[2].supression = 0;
 
 	b[3].lx = 150.0;
 	b[3].ly = 200.0;
 	b[3].rx = 300.0;
 	b[3].ry = 100.0;
-	b[3].cfd = 0.4;
+	b[3].cfd = 0.80f;
 	b[3].supression = 0;
 }
 
@@ -127,30 +158,28 @@ int main(void) {
 //	float* s = (float*)malloc(sizeof(float) * BOX_SIZE);
 	box* d = (box*)malloc(sizeof(box) * BOX_SIZE);
 	data_clean(b);
-
-	//è®¡æ—¶å™¨
+	//¼ÆÊ±Æ÷
 	long i = 10000000L;
 	clock_t start, finish;
 	double duration;
-	float iou;
-	int count;
+	int count = 0;
 	start = clock();
 	/*******************/
 	//while (i--) {
-		count = do_nms(b,d,THRESH);
+		count = do_nms(b, d, THRESH);
 		printf("count: %d\n", count);
 		//iou = box_iou(b+0,b+1);
 	//}
 	/*******************/
 	finish = clock();
-	duration = (double)(finish - start) / CLOCKS_PER_SEC;
+	duration = (finish - start) / CLOCKS_PER_SEC;
 	printf("%f seconds\n", duration);
 	//printf("IoU: %f\n", iou);
 	//printf("s1: %f, s2: %f",*(s+0), *(s+1));
-	box* dd = d;
-
-	for(i = 0; i<count;i++)
-		printf("d: %f\n",(dd+i)->cfd);
+	if (d) {
+		for (i = 0; i < count; i++)
+			printf("d: %.2f\n", (d + i)->cfd);
+	}
 	free(b);
 	free(d);
 	system("pause");
