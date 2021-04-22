@@ -1,0 +1,9 @@
+﻿  soft_nms.c
+C:\Users\lenovo\source\repos\Soft_NMS\Soft_NMS\soft_nms.c(170,39): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+C:\Users\lenovo\source\repos\Soft_NMS\Soft_NMS\soft_nms.c(253,24): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+C:\Users\lenovo\source\repos\Soft_NMS\Soft_NMS\soft_nms.c(256,24): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+C:\Users\lenovo\source\repos\Soft_NMS\Soft_NMS\soft_nms.c(259,24): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+C:\Users\lenovo\source\repos\Soft_NMS\Soft_NMS\soft_nms.c(262,24): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+C:\Users\lenovo\source\repos\Soft_NMS\Soft_NMS\soft_nms.c(265,25): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+C:\Users\lenovo\source\repos\Soft_NMS\Soft_NMS\soft_nms.c(289,38): warning C4305: “函数”: 从“double”到“float”截断
+  Soft_NMS.vcxproj -> C:\Users\lenovo\source\repos\Soft_NMS\Debug\Soft_NMS.exe
