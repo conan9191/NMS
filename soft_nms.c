@@ -22,6 +22,8 @@
 typedef struct {
 	float lx, ly, rx, ry;	//左上角x  左上角y	 右下角x	 右下角y
 	float cfd;	//置信度 Confidence
+	float class_cfd;
+	float label;
 	int supression; //是否被抑制
 } box;
 
@@ -49,8 +51,8 @@ float box_intersection(box* a, box* b)	//传入指针是否更快？？
 //传入两个候选框变量a、b，返回并集面积值
 float box_union(box* a, box* b) {	//传入指针是否更快？？
 	float insersection = box_intersection(a, b);	//减少函数调用还是开辟变量空间进行优化？？
-	float areaA = (a->rx - a->lx) * (a->ly - a->ry);	//是否使用绝对值？？
-	float areaB = (b->rx - b->lx) * (b->ly - b->ry);
+	float areaA = (a->rx - a->lx) * (a->ry - a->ly);	//是否使用绝对值？？
+	float areaB = (b->rx - b->lx) * (b->ry - b->ly);
 	float area = areaA + areaB - insersection;	//直接返回 不创建变量??
 	return area;
 }

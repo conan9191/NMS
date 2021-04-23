@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="soft_nms.cpp">
+    <ClCompile Include="soft_nms.c">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
